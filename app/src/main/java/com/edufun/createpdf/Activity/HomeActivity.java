@@ -36,5 +36,9 @@ public class HomeActivity extends AppCompatActivity {
             Intent in = new Intent(this, MainActivity.class);
             startActivity(in);
         });
+        binding.imageToPdf.setOnClickListener(v -> {
+            Intent in = new Intent(this, ImageToPdfActivity.class);
+            startActivity(in);
+        });
     }
 }

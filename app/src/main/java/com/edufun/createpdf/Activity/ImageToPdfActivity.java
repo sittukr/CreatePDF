@@ -1,39 +1,56 @@
 package com.edufun.createpdf.Activity;
 
+import static com.edufun.createpdf.MainActivity.openPdf;
+
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.edufun.createpdf.Adapter.ImageToPdfAdapter;
 import com.edufun.createpdf.Model.ImageListModel;
 import com.edufun.createpdf.Model.PdfFileModel;
 import com.edufun.createpdf.R;
 import com.edufun.createpdf.databinding.ActivityImageToPdfBinding;
 import com.itextpdf.text.Document;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.PdfDocument;
+import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
 public class ImageToPdfActivity extends AppCompatActivity {
     ActivityImageToPdfBinding binding;
     List<ImageListModel> imageList = new ArrayList<>();
+    ImageToPdfAdapter adapter;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +65,13 @@ public class ImageToPdfActivity extends AppCompatActivity {
         });
 
 
+        binding.recyclerview.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new ImageToPdfAdapter(imageList,this);
+        binding.recyclerview.setAdapter(adapter);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(binding.recyclerview);
+
         binding.btnSelectImage.setOnClickListener(v -> {
             Intent in = new Intent(Intent.ACTION_GET_CONTENT);
             in.setType("image/*");
@@ -57,12 +81,35 @@ public class ImageToPdfActivity extends AppCompatActivity {
         binding.btnCreatePdf.setOnClickListener(v -> {
             createPdf();
         });
+        binding.imgBack.setOnClickListener(v -> {
+            finish();
+        });
 
 
     }
 
+    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN |ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT,0) {
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int fromPosition = viewHolder.getAdapterPosition();
+            int toPosition = target.getAdapterPosition();
+            Collections.swap(imageList,fromPosition,toPosition);
+            adapter.notifyItemMoved(fromPosition,toPosition);
+            return true;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+        }
+    };
+
     private void createPdf() {
         try {
+            dialog = new ProgressDialog(this);
+            dialog.setMessage("Creating PDF");
+            dialog.setCancelable(false);
+            dialog.show();
 
             ContentValues values = new ContentValues();
             values.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_To_Pdf.pdf");
@@ -77,18 +124,40 @@ public class ImageToPdfActivity extends AppCompatActivity {
                 imagePdf = resolver.insert(collection, values);
             }else {
                 Toast.makeText(this, "older device", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
                 return;
             }
             if (imagePdf!=null){
                 try(OutputStream out = resolver.openOutputStream(imagePdf)) {
 
+                    Document document = new Document();
+                    PdfWriter writer = PdfWriter.getInstance(document,out);
+                    writer.open();
+                    document.open();
+                    for (ImageListModel uri : imageList){
+                        Uri imageUri =  uri.getUri();
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),imageUri);
+                        Image image = Image.getInstance(bitmapToBiteArray(bitmap));
 
+                        image.scaleToFit(document.getPageSize().getWidth(),document.getPageSize().getHeight());
+                        image.setAlignment(Image.ALIGN_CENTER);
+
+                        document.add(image);
+                        document.newPage();
+                    }
+                    document.close();
                 }
+                values.put(MediaStore.MediaColumns.IS_PENDING,0);
+                resolver.update(imagePdf,values,null,null);
+                openPdf(imagePdf,this);
+                Toast.makeText(this, "PDF Created Successfully", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
             }
 
 
         }catch (Exception e){
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
             throw new RuntimeException(e);
         }
     }
@@ -102,11 +171,18 @@ public class ImageToPdfActivity extends AppCompatActivity {
                 for (int i =0; i<count; i++){
                     Uri uri = data.getClipData().getItemAt(i).getUri();
                     imageList.add(getImageDetails(uri));
+
+                    binding.btnCreatePdf.setVisibility(View.VISIBLE);
+                    binding.tvOrderPdf.setVisibility(View.VISIBLE);
                 }
             } else if (data.getData()!=null) {
                 Uri uri =data.getData();
                 imageList.add(getImageDetails(uri));
+
+                binding.btnCreatePdf.setVisibility(View.VISIBLE);
+                binding.tvOrderPdf.setVisibility(View.VISIBLE);
             }
+            adapter.notifyDataSetChanged();
         }
     }
     private ImageListModel getImageDetails(Uri uri){
@@ -126,5 +202,10 @@ public class ImageToPdfActivity extends AppCompatActivity {
             }
             return new ImageListModel(uri,fileSize,fileName);
         }
+    }
+    private byte[] bitmapToBiteArray (Bitmap bitmap){
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100,outputStream);
+        return outputStream.toByteArray();
     }
 }

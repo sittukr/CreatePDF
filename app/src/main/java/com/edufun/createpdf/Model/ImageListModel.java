@@ -2,15 +2,34 @@ package com.edufun.createpdf.Model;
 
 import android.net.Uri;
 
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
+
 public class ImageListModel {
     Uri uri;
     long fileSize;
     String fileName;
+    int rotation;
+    Rectangle pageSize;
 
-    public ImageListModel(Uri uri, long fileSize, String fileName) {
+    public ImageListModel(Uri uri, long fileSize, String fileName, int rotation, Rectangle pageSize) {
         this.uri = uri;
         this.fileSize = fileSize;
         this.fileName = fileName;
+        this.rotation = rotation;
+        this.pageSize = pageSize;
+    }
+
+    public void setPageSize(Rectangle pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public float getRotation() {
+        return rotation;
+    }
+
+    public void setRotation(int rotation) {
+        this.rotation = rotation;
     }
 
     public Uri getUri() {

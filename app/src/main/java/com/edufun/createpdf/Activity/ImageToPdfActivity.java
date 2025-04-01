@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
@@ -35,6 +36,8 @@ import com.edufun.createpdf.R;
 import com.edufun.createpdf.databinding.ActivityImageToPdfBinding;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfDocument;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -79,7 +82,12 @@ public class ImageToPdfActivity extends AppCompatActivity {
             startActivityForResult(Intent.createChooser(in,"Select Images"),1);
         });
         binding.btnCreatePdf.setOnClickListener(v -> {
-            createPdf();
+            if (!imageList.isEmpty()){
+                createPdf();
+            }else {
+                Toast.makeText(this, "Pick at least one Image", Toast.LENGTH_SHORT).show();
+            }
+            
         });
         binding.imgBack.setOnClickListener(v -> {
             finish();
@@ -105,61 +113,83 @@ public class ImageToPdfActivity extends AppCompatActivity {
     };
 
     private void createPdf() {
-        try {
-            dialog = new ProgressDialog(this);
-            dialog.setMessage("Creating PDF");
-            dialog.setCancelable(false);
-            dialog.show();
 
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_To_Pdf.pdf");
-            values.put(MediaStore.MediaColumns.MIME_TYPE,"application/pdf");
-            values.put(MediaStore.MediaColumns.IS_PENDING,1);
+        dialog = new ProgressDialog(ImageToPdfActivity.this);
+        dialog.setMessage("Creating PDF");
+        dialog.setCancelable(false);
+        dialog.show();
 
-            ContentResolver resolver = getContentResolver();
-            Uri imagePdf = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp");
-                Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                imagePdf = resolver.insert(collection, values);
-            }else {
-                Toast.makeText(this, "older device", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
-                return;
-            }
-            if (imagePdf!=null){
-                try(OutputStream out = resolver.openOutputStream(imagePdf)) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_To_Pdf.pdf");
+                    values.put(MediaStore.MediaColumns.MIME_TYPE,"application/pdf");
+                    values.put(MediaStore.MediaColumns.IS_PENDING,1);
 
-                    Document document = new Document();
-                    PdfWriter writer = PdfWriter.getInstance(document,out);
-                    writer.open();
-                    document.open();
-                    for (ImageListModel uri : imageList){
-                        Uri imageUri =  uri.getUri();
-                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),imageUri);
-                        Image image = Image.getInstance(bitmapToBiteArray(bitmap));
-
-                        image.scaleToFit(document.getPageSize().getWidth(),document.getPageSize().getHeight());
-                        image.setAlignment(Image.ALIGN_CENTER);
-
-                        document.add(image);
-                        document.newPage();
+                    ContentResolver resolver = getContentResolver();
+                    Uri imagePdf = null;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp");
+                        Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                        imagePdf = resolver.insert(collection, values);
+                    }else {
+                        Toast.makeText(ImageToPdfActivity.this, "older device", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        return;
                     }
-                    document.close();
+                    if (imagePdf!=null){
+                        try(OutputStream out = resolver.openOutputStream(imagePdf)) {
+
+
+                            Document document = new Document();
+                            PdfWriter writer = PdfWriter.getInstance(document,out);
+                            writer.open();
+                            document.open();
+                            for (ImageListModel list : imageList){
+                                Uri imageUri =  list.getUri();
+                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),imageUri);
+                                Image image = Image.getInstance(bitmapToBiteArray(bitmap));
+
+                                int rotationAngle = (int) -list.getRotation();
+                                image.setRotationDegrees(rotationAngle);
+
+                                float docWidth = document.getPageSize().getWidth();
+                                float docHeight = document.getPageSize().getHeight();
+
+                                if (rotationAngle == 90 || rotationAngle == 270 || rotationAngle == -90 || rotationAngle == -270) {
+                                    image.scaleToFit(docHeight, docWidth);
+                                } else {
+                                    image.scaleToFit(docWidth, docHeight);
+                                }
+                                //image.scaleToFit(document.getPageSize().getWidth(),document.getPageSize().getHeight());
+                                image.setAlignment(Image.ALIGN_CENTER);
+
+
+                                document.add(image);
+                                document.newPage();
+                            }
+                            document.close();
+                        }
+                        values.put(MediaStore.MediaColumns.IS_PENDING,0);
+                        resolver.update(imagePdf,values,null,null);
+                        openPdf(imagePdf, ImageToPdfActivity.this);
+                        Toast.makeText(ImageToPdfActivity.this, "PDF Created Successfully", Toast.LENGTH_SHORT).show();
+
+                        dialog.dismiss();
+
+                    }
+
+
+                }catch (Exception e){
+                    Toast.makeText(ImageToPdfActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    throw new RuntimeException(e);
                 }
-                values.put(MediaStore.MediaColumns.IS_PENDING,0);
-                resolver.update(imagePdf,values,null,null);
-                openPdf(imagePdf,this);
-                Toast.makeText(this, "PDF Created Successfully", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
             }
+        },500);
 
-
-        }catch (Exception e){
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -188,6 +218,8 @@ public class ImageToPdfActivity extends AppCompatActivity {
     private ImageListModel getImageDetails(Uri uri){
         String fileName = "unknown";
         long fileSize =0;
+        int rotation = 0;
+        Rectangle pageSize = PageSize.A4;
         try ( Cursor cursor = getContentResolver().query(uri,null,null,null,null)) {
             if (cursor!=null && cursor.moveToFirst()){
                 int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
@@ -200,7 +232,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
                     fileSize = cursor.getLong(sizeIndex);
                 }
             }
-            return new ImageListModel(uri,fileSize,fileName);
+            return new ImageListModel(uri,fileSize,fileName,rotation,pageSize);
         }
     }
     private byte[] bitmapToBiteArray (Bitmap bitmap){

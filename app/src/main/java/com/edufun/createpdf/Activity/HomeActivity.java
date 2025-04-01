@@ -28,6 +28,8 @@ public class HomeActivity extends AppCompatActivity {
             return insets;
         });
 
+        getWindow().setStatusBarColor(getResources().getColor(R.color.blue));
+
         binding.mergePdf.setOnClickListener(v -> {
             Intent in = new Intent(this,MergePdfActivity.class);
             startActivity(in);

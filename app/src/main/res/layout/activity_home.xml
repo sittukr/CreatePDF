@@ -12,14 +12,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        android:padding="20dp"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="20dp"
         android:background="@color/blue"
         android:orientation="horizontal">
         <ImageView
             android:id="@+id/imgHome"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:layout_marginStart="10dp"
             android:src="@drawable/home"
             app:tint="@color/blue2" />
         <TextView

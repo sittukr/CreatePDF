@@ -1,6 +1,8 @@
 package com.edufun.createpdf;
 
 import android.Manifest;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,9 +16,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Editable;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -38,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
     String fName,textInput;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -56,20 +65,56 @@ public class MainActivity extends AppCompatActivity {
             finish();
         });
         binding.btnCreate.setOnClickListener(v -> {
-            fName = binding.etFileName.getText().toString();
-            String withoutSpaceName = fName.replaceAll("\\s","");
             textInput = binding.etText.getText().toString();
             String withoutSpaceText =textInput.replaceAll("\\s","");
-            if (fName != null && !withoutSpaceName.isEmpty()){
                 if (textInput != null && !withoutSpaceText.isEmpty()){
-                    try {
-                        createPdf();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }else binding.etText.setError("Enter Data");
-            }else binding.etFileName.setError("Enter File Name");
+                    Dialog dialog1 = new Dialog(this);
 
+                    dialog1.setCancelable(false);
+                    dialog1.setContentView(R.layout.ask_filename);
+                    dialog1.getWindow().setLayout( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    dialog1.getWindow().setBackgroundDrawableResource(R.drawable.rounded_white_bg);
+                    Button btnCancel = dialog1.findViewById(R.id.btnCancel);
+                    Button btnSave = dialog1.findViewById(R.id.btnSave);
+                    EditText etFileName = dialog1.findViewById(R.id.etFileName);
+                    etFileName.setText("TextToPdf");
+                    dialog1.show();
+                    btnCancel.setOnClickListener(v1 -> {
+                        dialog1.dismiss();
+                    });
+                    btnSave.setOnClickListener(v1 -> {
+                        fName = etFileName.getText().toString();
+                        if (!fName.isBlank()){
+                            try {
+                                createPdf();
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                            dialog1.dismiss();
+                        }else {
+                            etFileName.setError("Enter File Name");
+                        }
+                    });
+                }else Toast.makeText(this, "Write Something...", Toast.LENGTH_SHORT).show();
+
+        });
+        binding.etText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (count==0){
+                    binding.btnCreate.setVisibility(View.GONE);
+                }else binding.btnCreate.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
         });
        
 

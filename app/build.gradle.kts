@@ -45,6 +45,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation("com.itextpdf:itextpdf:5.5.13.2")
+    //implementation ("com.itextpdf:itext7-core:7.1.9")
 
     implementation ("com.squareup.picasso:picasso:2.8")
 }

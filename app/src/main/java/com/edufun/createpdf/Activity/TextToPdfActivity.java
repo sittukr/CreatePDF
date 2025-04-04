@@ -1,8 +1,7 @@
-package com.edufun.createpdf;
+package com.edufun.createpdf.Activity;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -12,7 +11,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -34,22 +32,20 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.edufun.createpdf.databinding.ActivityMainBinding;
+import com.edufun.createpdf.R;
+import com.edufun.createpdf.databinding.ActivityTextToPdfBinding;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class MainActivity extends AppCompatActivity {
+public class TextToPdfActivity extends AppCompatActivity {
 
-    ActivityMainBinding binding;
+    ActivityTextToPdfBinding binding;
     String fName,textInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        binding = ActivityTextToPdfBinding.inflate(getLayoutInflater());
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(binding.getRoot());
@@ -214,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
                 values.clear();
                 Toast.makeText(this, "Pdf Created Successfully", Toast.LENGTH_SHORT).show();
 
-                openPdf(pdfUri,MainActivity.this);
+                openPdf(pdfUri, TextToPdfActivity.this);
 
                 values.put(MediaStore.MediaColumns.IS_PENDING,0);
                 resolver.update(pdfUri,values,null,null);

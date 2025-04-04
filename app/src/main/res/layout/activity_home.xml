@@ -124,30 +124,30 @@
                     android:textStyle="bold"/>
             </LinearLayout>
             <LinearLayout
-                android:id="@+id/PdfSplit"
+                android:id="@+id/SplitPdf"
                 android:layout_weight="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
-                android:padding="0dp"
+                android:padding="15dp"
                 android:layout_marginStart="5dp"
                 android:orientation="vertical">
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_gravity="center"
-                    android:visibility="gone"
-                    android:src="@drawable/text_to_pdf_img"
+                    android:visibility="visible"
+                    android:src="@drawable/split"
                     app:tint="@color/blue2" />
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:text="Text To PDF"
+                    android:text="Split PDF"
                     android:textSize="16sp"
                     android:gravity="center"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     android:textStyle="bold"/>
             </LinearLayout>
         </LinearLayout>

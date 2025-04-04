@@ -9,7 +9,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.edufun.createpdf.MainActivity;
 import com.edufun.createpdf.R;
 import com.edufun.createpdf.databinding.ActivityHomeBinding;
 
@@ -35,11 +34,15 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(in);
         });
         binding.textToPdf.setOnClickListener(v -> {
-            Intent in = new Intent(this, MainActivity.class);
+            Intent in = new Intent(this, TextToPdfActivity.class);
             startActivity(in);
         });
         binding.imageToPdf.setOnClickListener(v -> {
             Intent in = new Intent(this, ImageToPdfActivity.class);
+            startActivity(in);
+        });
+        binding.SplitPdf.setOnClickListener(v -> {
+            Intent in = new Intent(this,SplitPdfActivity.class);
             startActivity(in);
         });
     }

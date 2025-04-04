@@ -1,29 +1,29 @@
 package com.edufun.createpdf.Activity;
 
-import static com.edufun.createpdf.MainActivity.openPdf;
-import static java.lang.System.clearProperty;
-import static java.lang.System.identityHashCode;
-import static java.lang.System.out;
+import static com.edufun.createpdf.Activity.TextToPdfActivity.openPdf;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -40,13 +40,9 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +50,8 @@ public class MergePdfActivity extends AppCompatActivity {
     ActivityMergePdfBinding binding ;
     List<PdfFileModel> pdfUri = new ArrayList<>();
     PdfListAdapter adapter;
+    String pdfFileName;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +91,29 @@ public class MergePdfActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please select at least one PDF File", Toast.LENGTH_SHORT).show();
                 return;
             }
-            mergePDF();
+            Dialog dialog1 = new Dialog(this);
+
+            dialog1.setCancelable(false);
+            dialog1.setContentView(R.layout.ask_filename);
+            dialog1.getWindow().setLayout( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog1.getWindow().setBackgroundDrawableResource(R.drawable.rounded_white_bg);
+            Button btnCancel = dialog1.findViewById(R.id.btnCancel);
+            Button btnSave = dialog1.findViewById(R.id.btnSave);
+            EditText etFileName = dialog1.findViewById(R.id.etFileName);
+            etFileName.setText("Merged PDF");
+            dialog1.show();
+            btnCancel.setOnClickListener(v1 -> {
+                dialog1.dismiss();
+            });
+            btnSave.setOnClickListener(v1 -> {
+                pdfFileName = etFileName.getText().toString();
+                if (!pdfFileName.isBlank()){
+                    mergePDF();
+                    dialog1.dismiss();
+                }else {
+                    etFileName.setError("Enter File Name");
+                }
+            });
         });
 
     }
@@ -118,7 +138,7 @@ public class MergePdfActivity extends AppCompatActivity {
                 }
             }
             adapter.notifyDataSetChanged();
-            Toast.makeText(this, "Selected "+pdfUri.size()+" PDF Files", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "Selected "+pdfUri.size()+" PDF Files", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -138,50 +158,62 @@ public class MergePdfActivity extends AppCompatActivity {
         }
     };
     private void mergePDF(){
-        try {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.MediaColumns.DISPLAY_NAME,"merged.pdf");
-            values.put(MediaStore.MediaColumns.MIME_TYPE,"application/pdf");
-            values.put(MediaStore.MediaColumns.IS_PENDING,1);
+        dialog = new ProgressDialog(MergePdfActivity.this);
+        dialog.setMessage("Merging PDF...");
+        dialog.setCancelable(false);
+        dialog.show();
 
-            ContentResolver resolver = getContentResolver();
-            Uri mergedPdfUri = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp");
-                Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                mergedPdfUri = resolver.insert(collection, values);
-            }else {
-                Toast.makeText(this, "older device", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME,pdfFileName+".pdf");
+                    values.put(MediaStore.MediaColumns.MIME_TYPE,"application/pdf");
+                    values.put(MediaStore.MediaColumns.IS_PENDING,1);
 
-            if (mergedPdfUri != null) {
-                try (OutputStream out = resolver.openOutputStream(mergedPdfUri)) {
-
-                    Document document = new Document();
-                    PdfCopy copy = new PdfCopy(document, out);
-                    document.open();
-
-                    for (PdfFileModel uri : pdfUri) {
-                        PdfReader reader = new PdfReader(getContentResolver().openInputStream(uri.getUri()));
-                        copy.addDocument(reader);
-                        reader.close();
+                    ContentResolver resolver = getContentResolver();
+                    Uri mergedPdfUri = null;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp");
+                        Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                        mergedPdfUri = resolver.insert(collection, values);
+                    }else {
+                        Toast.makeText(MergePdfActivity.this, "older device", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+                        return;
                     }
 
-                    document.close();
-                    values.clear();
-                    values.put(MediaStore.MediaColumns.IS_PENDING, 0);
-                    resolver.update(mergedPdfUri, values, null, null);
+                    if (mergedPdfUri != null) {
+                        try (OutputStream out = resolver.openOutputStream(mergedPdfUri)) {
 
-                    Toast.makeText(this, "PDF File Merged Successfully", Toast.LENGTH_SHORT).show();
+                            Document document = new Document();
+                            PdfCopy copy = new PdfCopy(document, out);
+                            document.open();
 
-                    openPdf(mergedPdfUri,MergePdfActivity.this);
+                            for (PdfFileModel uri : pdfUri) {
+                                PdfReader reader = new PdfReader(getContentResolver().openInputStream(uri.getUri()));
+                                copy.addDocument(reader);
+                                reader.close();
+                            }
+
+                            document.close();
+                            values.clear();
+                            values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                            resolver.update(mergedPdfUri, values, null, null);
+
+                            Toast.makeText(MergePdfActivity.this, "PDF File Merged Successfully", Toast.LENGTH_SHORT).show();
+                            dialog.dismiss();
+                            openPdf(mergedPdfUri,MergePdfActivity.this);
+                        }
+                    }dialog.dismiss();
+                } catch (DocumentException | IOException e) {
+                    Toast.makeText(MergePdfActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                    throw new RuntimeException(e);
                 }
             }
-        } catch (DocumentException | IOException e) {
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-            throw new RuntimeException(e);
-        }
+        },500);
+
     }
     private PdfFileModel getPdfDetails(Uri uri){
         String fileName = "unknown";

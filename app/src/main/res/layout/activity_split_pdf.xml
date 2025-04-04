@@ -6,5 +6,250 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activity.SplitPdfActivity">
+    <LinearLayout
+        android:id="@+id/topLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        android:padding="20dp"
+        android:background="@color/blue"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/imgBack"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/arrow_back_ios_new_24"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Split PDF"
+            android:textStyle="bold"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/topLayout"
+        app:layout_constraintBottom_toTopOf="@+id/bottomLayout">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:id="@+id/firstLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintTop_toBottomOf="@+id/topLayout"
+                android:gravity="center"
+                android:orientation="vertical">
+                <ImageView
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:src="@drawable/split"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="40dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Split PDF File"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="10dp"
+                    android:textSize="20sp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Separate one page or a whole set for easy conversion into independent PDF files."
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textColor="@color/grey"
+                    android:layout_marginTop="10dp"
+                    android:textSize="14sp"/>
+
+                <Button
+                    android:id="@+id/btnSelectPdf"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select PDF File"
+                    android:background="@color/blue"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="10dp"/>
+                <TextView
+                    android:id="@+id/tvFileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Name :"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="10dp"
+                    android:textSize="20sp"
+                    android:visibility="gone"
+                    tools:visibility="visible"/>
+                <TextView
+                    android:id="@+id/tvPageNo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Page No :"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="0dp"
+                    android:textSize="16sp"
+                    android:visibility="gone"
+                    tools:visibility="visible"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/secondLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_white_bg"
+                android:padding="10dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="20dp"
+                app:layout_constraintTop_toBottomOf="@+id/firstLayout"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Extract all pages"
+                        android:textSize="18sp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Every page will be extracted as a separate PDF. "
+                        android:textSize="14sp"/>
+                </LinearLayout>
+
+                <CheckBox
+                    android:id="@+id/cbExtractAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:gravity="center"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/thirdLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rounded_white_bg"
+                android:padding="10dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="20dp"
+                app:layout_constraintTop_toBottomOf="@+id/secondLayout"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+                <LinearLayout
+                    android:layout_weight="1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Split by ranges"
+                        android:textSize="18sp"/>
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Add Custom range. "
+                        android:textSize="14sp"/>
+                </LinearLayout>
+                <CheckBox
+                    android:id="@+id/cbSplitRange"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:gravity="center"/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/fourthLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="20dp"
+                app:layout_constraintTop_toBottomOf="@+id/thirdLayout"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="From page Number"
+                    android:paddingStart="10dp"
+                    android:textSize="16sp"/>
+                <EditText
+                    android:id="@+id/etStartPage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Starting Page"
+                    android:gravity="start"
+                    android:background="@drawable/rounded_bg"
+                    android:textSize="18sp"
+                    android:inputType="number"
+                    android:layout_marginTop="5dp"
+                    android:padding="10dp"/>
+                <TextView
+                    android:id="@+id/tvEndPage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="To page number"
+                    android:paddingStart="10dp"
+                    android:layout_marginTop="20dp"
+                    android:textSize="16sp"/>
+                <EditText
+                    android:id="@+id/etEndPage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:hint="Ending Page"
+                    android:gravity="start"
+                    android:background="@drawable/rounded_bg"
+                    android:textSize="18sp"
+                    android:layout_marginTop="5dp"
+                    android:padding="10dp"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+<LinearLayout
+    android:id="@+id/bottomLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    app:layout_constraintBottom_toBottomOf="parent">
+    <Button
+        android:id="@+id/btnSplitRange"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Split PDF File"
+        android:background="@color/blue"
+        android:layout_marginBottom="20dp"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+    <Button
+        android:id="@+id/btnExtractAll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="Extract PDF File"
+        android:background="@color/blue"
+        android:layout_marginBottom="20dp"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+</LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

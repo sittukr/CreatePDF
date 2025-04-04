@@ -1,7 +1,8 @@
 package com.edufun.createpdf.Activity;
 
-import static com.edufun.createpdf.MainActivity.openPdf;
+import static com.edufun.createpdf.Activity.TextToPdfActivity.openPdf;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -15,6 +16,9 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -24,22 +28,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.edufun.createpdf.Adapter.ImageToPdfAdapter;
 import com.edufun.createpdf.Model.ImageListModel;
-import com.edufun.createpdf.Model.PdfFileModel;
 import com.edufun.createpdf.R;
 import com.edufun.createpdf.databinding.ActivityImageToPdfBinding;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfDocument;
-import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.ByteArrayOutputStream;
@@ -47,13 +47,13 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 
 public class ImageToPdfActivity extends AppCompatActivity {
     ActivityImageToPdfBinding binding;
     List<ImageListModel> imageList = new ArrayList<>();
     ImageToPdfAdapter adapter;
     ProgressDialog dialog;
+    String pdfFileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +83,30 @@ public class ImageToPdfActivity extends AppCompatActivity {
         });
         binding.btnCreatePdf.setOnClickListener(v -> {
             if (!imageList.isEmpty()){
-                createPdf();
+
+                Dialog dialog1 = new Dialog(this);
+
+                dialog1.setCancelable(false);
+                dialog1.setContentView(R.layout.ask_filename);
+                dialog1.getWindow().setLayout( ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                dialog1.getWindow().setBackgroundDrawableResource(R.drawable.rounded_white_bg);
+                Button btnCancel = dialog1.findViewById(R.id.btnCancel);
+                Button btnSave = dialog1.findViewById(R.id.btnSave);
+                EditText etFileName = dialog1.findViewById(R.id.etFileName);
+                etFileName.setText("ImageToPdf");
+                dialog1.show();
+                btnCancel.setOnClickListener(v1 -> {
+                    dialog1.dismiss();
+                });
+                btnSave.setOnClickListener(v1 -> {
+                    pdfFileName = etFileName.getText().toString();
+                    if (!pdfFileName.isBlank()){
+                        createPdf();
+                        dialog1.dismiss();
+                    }else {
+                        etFileName.setError("Enter File Name");
+                    }
+                });
             }else {
                 Toast.makeText(this, "Pick at least one Image", Toast.LENGTH_SHORT).show();
             }
@@ -124,7 +147,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
             public void run() {
                 try {
                     ContentValues values = new ContentValues();
-                    values.put(MediaStore.MediaColumns.DISPLAY_NAME,"Image_To_Pdf.pdf");
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME,pdfFileName+".pdf");
                     values.put(MediaStore.MediaColumns.MIME_TYPE,"application/pdf");
                     values.put(MediaStore.MediaColumns.IS_PENDING,1);
 
@@ -145,6 +168,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
 
                             Document document = new Document();
                             PdfWriter writer = PdfWriter.getInstance(document,out);
+                            writer.setCompressionLevel(9);
                             writer.open();
                             document.open();
                             for (ImageListModel list : imageList){
@@ -237,7 +261,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
     }
     private byte[] bitmapToBiteArray (Bitmap bitmap){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG,100,outputStream);
+        bitmap.compress(Bitmap.CompressFormat.PNG,80,outputStream);
         return outputStream.toByteArray();
     }
 }

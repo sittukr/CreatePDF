@@ -45,5 +45,13 @@ public class HomeActivity extends AppCompatActivity {
             Intent in = new Intent(this,SplitPdfActivity.class);
             startActivity(in);
         });
+        binding.protectPdf.setOnClickListener(v -> {
+            Intent in = new Intent(this,LockPdfActivity.class);
+            startActivity(in);
+        });
+        binding.unlockPdf.setOnClickListener(v -> {
+            Intent in = new Intent(this,UnlockPdfActivity.class);
+            startActivity(in);
+        });
     }
 }

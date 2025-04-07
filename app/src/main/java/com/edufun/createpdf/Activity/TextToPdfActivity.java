@@ -199,7 +199,7 @@ public class TextToPdfActivity extends AppCompatActivity {
 
        ContentResolver resolver = getContentResolver();
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS +"/MyApp");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS +"/MyApp/TextToPdf");
             Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             Uri pdfUri = resolver.insert(collection,values);
 

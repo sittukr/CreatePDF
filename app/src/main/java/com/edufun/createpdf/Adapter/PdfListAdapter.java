@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.edufun.createpdf.Activity.MergePdfActivity;
 import com.edufun.createpdf.Model.PdfFileModel;
 import com.edufun.createpdf.R;
+import com.edufun.createpdf.databinding.ActivityMergePdfBinding;
 
 import java.util.List;
 
@@ -22,11 +23,14 @@ public class PdfListAdapter extends RecyclerView.Adapter<PdfListAdapter.pdfViewH
 
     List<PdfFileModel> pdfListUri ;
     Context context;
+    ActivityMergePdfBinding binding;
 
 
-    public PdfListAdapter(List<PdfFileModel> pdfListUri, Context context) {
+
+    public PdfListAdapter(List<PdfFileModel> pdfListUri, Context context,ActivityMergePdfBinding binding) {
         this.pdfListUri = pdfListUri;
         this.context = context;
+        this.binding = binding;
     }
 
     @NonNull
@@ -47,6 +51,14 @@ public class PdfListAdapter extends RecyclerView.Adapter<PdfListAdapter.pdfViewH
             notifyItemRemoved(position);
             notifyItemRangeChanged(position,pdfListUri.size());
            // Toast.makeText(context, "PDF Removed", Toast.LENGTH_SHORT).show();
+
+            if (pdfListUri.size() == 0){
+               binding.selectMediaLayout.setVisibility(View.VISIBLE);
+            }
+            else {
+                binding.selectMediaLayout.setVisibility(View.GONE);
+            }
+
         });
     }
 

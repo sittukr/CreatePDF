@@ -69,7 +69,7 @@ public class MergePdfActivity extends AppCompatActivity {
 
 
         binding.recyclerview.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new PdfListAdapter(pdfUri,this);
+        adapter = new PdfListAdapter(pdfUri,this, binding);
         binding.recyclerview.setAdapter(adapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
@@ -79,11 +79,16 @@ public class MergePdfActivity extends AppCompatActivity {
         binding.imgBack.setOnClickListener(v -> {
             finish();
         });
+
         binding.btnSelectPdf.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.setType("application/pdf");
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
             startActivityForResult(intent,1);
+        });
+
+        binding.selectMediaLayout.setOnClickListener(v -> {
+            binding.btnSelectPdf.performClick();
         });
 
         binding.btnMergePdf.setOnClickListener(v -> {
@@ -128,6 +133,7 @@ public class MergePdfActivity extends AppCompatActivity {
                 pdfUri.add(getPdfDetails(uri));
                 binding.btnMergePdf.setVisibility(View.VISIBLE);
                 binding.tvOrderPdf.setVisibility(View.VISIBLE);
+                binding.selectMediaLayout.setVisibility(View.GONE);
 
             } else if (data.getClipData() != null) {
                 for (int i=0; i<data.getClipData().getItemCount(); i++){
@@ -135,6 +141,7 @@ public class MergePdfActivity extends AppCompatActivity {
                     pdfUri.add(getPdfDetails(uri));
                     binding.btnMergePdf.setVisibility(View.VISIBLE);
                     binding.tvOrderPdf.setVisibility(View.VISIBLE);
+                    binding.selectMediaLayout.setVisibility(View.GONE);
                 }
             }
             adapter.notifyDataSetChanged();
@@ -175,7 +182,7 @@ public class MergePdfActivity extends AppCompatActivity {
                     ContentResolver resolver = getContentResolver();
                     Uri mergedPdfUri = null;
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp");
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp/Merged_Pdf");
                         Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                         mergedPdfUri = resolver.insert(collection, values);
                     }else {

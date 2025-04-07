@@ -35,6 +35,7 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,6 +66,14 @@ public class UnlockPdfActivity extends AppCompatActivity {
             in.setType("application/pdf");
             //startActivityForResult(in,1);
             selectPdfLauncher.launch(in);
+
+//            File folder = new File(Environment.getExternalStorageDirectory(),"MyApp");
+//            Uri folderUri = Uri.fromFile(folder);
+//            Intent in = new Intent(Intent.ACTION_VIEW);
+//            in.setDataAndType(folderUri,"*/*");
+//            in.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            startActivity(in);
+
         });
 
         binding.btnProtect.setOnClickListener(v -> {
@@ -134,7 +143,7 @@ public class UnlockPdfActivity extends AppCompatActivity {
 
         Uri unlockUri =null;
         if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS+"/MyApp");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS+"/MyApp/UnlockPdf");
             Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             unlockUri = resolver.insert(collection,values);
 

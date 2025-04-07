@@ -6,15 +6,19 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.text.format.Formatter;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -43,10 +47,15 @@ import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import id.zelory.compressor.Compressor;
 
 public class ImageToPdfActivity extends AppCompatActivity {
     ActivityImageToPdfBinding binding;
@@ -81,6 +90,10 @@ public class ImageToPdfActivity extends AppCompatActivity {
             in.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);
             startActivityForResult(Intent.createChooser(in,"Select Images"),1);
         });
+        binding.selectMediaLayout.setOnClickListener(v -> {
+            binding.btnSelectImage.performClick();
+        });
+
         binding.btnCreatePdf.setOnClickListener(v -> {
             if (!imageList.isEmpty()){
 
@@ -153,8 +166,8 @@ public class ImageToPdfActivity extends AppCompatActivity {
 
                     ContentResolver resolver = getContentResolver();
                     Uri imagePdf = null;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp");
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp /ImageToPdf");
                         Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                         imagePdf = resolver.insert(collection, values);
                     }else {
@@ -165,12 +178,20 @@ public class ImageToPdfActivity extends AppCompatActivity {
                     if (imagePdf!=null){
                         try(OutputStream out = resolver.openOutputStream(imagePdf)) {
 
+                            int widthInPixels = 512;
+                            int heightInPixels = 1024;
+
+                            // Convert to points (1 pixel = 72/96 points)
+                            float widthInPoints = widthInPixels * (72f / 96f);
+                            float heightInPoints = heightInPixels * (72f / 96f);
 
                             Document document = new Document();
+                            document.setMargins(0,0,0,0);
                             PdfWriter writer = PdfWriter.getInstance(document,out);
                             writer.setCompressionLevel(9);
                             writer.open();
                             document.open();
+
                             for (ImageListModel list : imageList){
                                 Uri imageUri =  list.getUri();
                                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(),imageUri);
@@ -182,14 +203,21 @@ public class ImageToPdfActivity extends AppCompatActivity {
                                 float docWidth = document.getPageSize().getWidth();
                                 float docHeight = document.getPageSize().getHeight();
 
-                                if (rotationAngle == 90 || rotationAngle == 270 || rotationAngle == -90 || rotationAngle == -270) {
-                                    image.scaleToFit(docHeight, docWidth);
-                                } else {
-                                    image.scaleToFit(docWidth, docHeight);
-                                }
-                                //image.scaleToFit(document.getPageSize().getWidth(),document.getPageSize().getHeight());
-                                image.setAlignment(Image.ALIGN_CENTER);
+                                float imageWidth = image.getScaledWidth();
+                                float imageHeight = image.getScaledHeight();
 
+//                                if (rotationAngle == 90 || rotationAngle == 270 || rotationAngle == -90 || rotationAngle == -270) {
+//                                    image.scaleToFit(new Rectangle(docHeight,docWidth));
+//                                   // document.setPageSize(new Rectangle(docHeight,docWidth));
+//                                } else {
+//                                    image.scaleToFit(docWidth, docHeight);
+//                                    //document.setPageSize(new Rectangle(docWidth,docHeight));
+//                                }
+
+                              //image.scaleToFit(document.getPageSize().getWidth(),document.getPageSize().getHeight());
+                              image.scaleToFit(PageSize.A4.getWidth(),PageSize.A4.getHeight());
+                              image.setAbsolutePosition((PageSize.A4.getWidth()-image.getScaledWidth())/2,(PageSize.A4.getHeight()-image.getScaledHeight())/2);
+                                image.setAlignment(Image.ALIGN_CENTER);
 
                                 document.add(image);
                                 document.newPage();
@@ -224,10 +252,12 @@ public class ImageToPdfActivity extends AppCompatActivity {
                 int count = data.getClipData().getItemCount();
                 for (int i =0; i<count; i++){
                     Uri uri = data.getClipData().getItemAt(i).getUri();
+                    
                     imageList.add(getImageDetails(uri));
 
                     binding.btnCreatePdf.setVisibility(View.VISIBLE);
                     binding.tvOrderPdf.setVisibility(View.VISIBLE);
+                    binding.selectMediaLayout.setVisibility(View.GONE);
                 }
             } else if (data.getData()!=null) {
                 Uri uri =data.getData();
@@ -235,6 +265,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
 
                 binding.btnCreatePdf.setVisibility(View.VISIBLE);
                 binding.tvOrderPdf.setVisibility(View.VISIBLE);
+                binding.selectMediaLayout.setVisibility(View.GONE);
             }
             adapter.notifyDataSetChanged();
         }
@@ -243,6 +274,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
         String fileName = "unknown";
         long fileSize =0;
         int rotation = 0;
+        Uri compressUri = null;
         Rectangle pageSize = PageSize.A4;
         try ( Cursor cursor = getContentResolver().query(uri,null,null,null,null)) {
             if (cursor!=null && cursor.moveToFirst()){
@@ -255,8 +287,9 @@ public class ImageToPdfActivity extends AppCompatActivity {
                 if (sizeIndex!= -1){
                     fileSize = cursor.getLong(sizeIndex);
                 }
+                compressUri = compress(uri,ImageToPdfActivity.this);
             }
-            return new ImageListModel(uri,fileSize,fileName,rotation,pageSize);
+            return new ImageListModel(compressUri,fileSize,fileName,rotation,pageSize);
         }
     }
     private byte[] bitmapToBiteArray (Bitmap bitmap){
@@ -264,4 +297,46 @@ public class ImageToPdfActivity extends AppCompatActivity {
         bitmap.compress(Bitmap.CompressFormat.PNG,80,outputStream);
         return outputStream.toByteArray();
     }
+
+    private Uri compress(Uri originalUri, Context context) {
+        File originalImageFile = new File(getRealPathFromURI(originalUri, context));
+        File compressedImageFile = null;
+        Uri compressedImageUri = null;
+
+        try {
+            // Use the Compressor library to compress the image
+            compressedImageFile = new Compressor(context)
+                    .setMaxWidth(512)    // Set the maximum width
+                    .setMaxHeight(512)  // Set the maximum height
+                    .setQuality(80)      // Set the quality (0 to 100)
+                    .setCompressFormat(Bitmap.CompressFormat.JPEG) // Set the compression format
+                    .compressToFile(originalImageFile); // Compress and save to a file
+
+            // After compression, get the Uri of the compressed file
+            compressedImageUri = Uri.fromFile(compressedImageFile);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(context, "Error during image compression: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
+        }
+
+        // Return the Uri of the compressed image
+        return compressedImageUri;
+    }
+
+    private String getRealPathFromURI(Uri uri, Context context) {
+        String[] projection = { MediaStore.Images.Media.DATA };
+        android.database.Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            String filePath = cursor.getString(columnIndex);
+            cursor.close();
+            return filePath;
+        } else {
+            return null;
+        }
+    }
+
 }

@@ -52,4 +52,10 @@ dependencies {
 
     //for showing photos
     implementation ("com.squareup.picasso:picasso:2.8")
+
+    //image compressor
+    implementation("id.zelory:compressor:2.1.1")
+
+   // implementation ("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
+   // implementation ("com.tom-roush:pdfbox-android:2.0.27.0")
 }

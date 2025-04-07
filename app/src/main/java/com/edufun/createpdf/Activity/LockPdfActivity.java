@@ -146,7 +146,7 @@ public class LockPdfActivity extends AppCompatActivity {
 
         Uri lockUri =null;
         if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.Q){
-            values.put(MediaStore.MediaColumns.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/MyApp");
+            values.put(MediaStore.MediaColumns.RELATIVE_PATH,Environment.DIRECTORY_DOWNLOADS+"/MyApp/Lock_Pdf");
             Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             lockUri = resolver.insert(collection,values);
             

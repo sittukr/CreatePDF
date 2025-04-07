@@ -50,11 +50,11 @@
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
                 android:padding="15dp"
-                android:layout_marginEnd="5dp"
+                android:layout_marginHorizontal="10dp"
                 android:orientation="vertical">
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_gravity="center"
                     android:src="@drawable/merge"
                     app:tint="@color/blue2" />
@@ -75,11 +75,11 @@
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
                 android:padding="15dp"
-                android:layout_marginStart="5dp"
+                android:layout_marginHorizontal="10dp"
                 android:orientation="vertical">
                 <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_gravity="center"
                     android:src="@drawable/text_to_pdf_img"
                     app:tint="@color/blue2" />
@@ -106,7 +106,7 @@
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
                 android:padding="15dp"
-                android:layout_marginEnd="5dp"
+                android:layout_marginHorizontal="10dp"
                 android:orientation="vertical">
                 <ImageView
                     android:layout_width="60dp"
@@ -131,7 +131,7 @@
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
                 android:padding="15dp"
-                android:layout_marginStart="5dp"
+                android:layout_marginHorizontal="10dp"
                 android:orientation="vertical">
                 <ImageView
                     android:layout_width="60dp"
@@ -164,7 +164,7 @@
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
                 android:padding="15dp"
-                android:layout_marginEnd="5dp"
+                android:layout_marginHorizontal="10dp"
                 android:orientation="vertical">
                 <ImageView
                     android:layout_width="60dp"
@@ -189,7 +189,7 @@
                 android:background="@drawable/page_bg"
                 android:elevation="10dp"
                 android:padding="15dp"
-                android:layout_marginStart="5dp"
+                android:layout_marginHorizontal="10dp"
                 android:orientation="vertical"
                 android:visibility="visible"
                 tools:visibility="visible">
@@ -204,7 +204,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
-                    android:text="Split PDF"
+                    android:text="Unlock PDF"
                     android:textSize="16sp"
                     android:gravity="center"
                     android:visibility="visible"

@@ -15,6 +15,8 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+
+
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -70,7 +72,7 @@ public class PdfToImageActivity extends AppCompatActivity {
         values.put(MediaStore.MediaColumns.MIME_TYPE,"image/png");
         values.put(MediaStore.MediaColumns.IS_PENDING,1);
         try {
-            ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_ONLY);
+            ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.open(pdfFile, ParcelFileDescriptor.MODE_READ_WRITE);
             PdfRenderer renderer = new PdfRenderer(fileDescriptor);
 
           //  PdfDocument document= zz
@@ -79,8 +81,8 @@ public class PdfToImageActivity extends AppCompatActivity {
                 int width = page.getWidth();
                 int height = page.getHeight();
 
-                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+                Bitmap bitmap = Bitmap.createBitmap(width*2, height*2, Bitmap.Config.ARGB_8888);
+                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT);
 
                 if (Build.VERSION.SDK_INT>Build.VERSION_CODES.Q){
                     values.put(MediaStore.MediaColumns.DISPLAY_NAME,"Pdf to Image "+i+".png");
@@ -95,7 +97,7 @@ public class PdfToImageActivity extends AppCompatActivity {
 //                File outputFile = new File(outputDir, "page.jpg");
 //                FileOutputStream out = new FileOutputStream(outputFile);
 
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
                    // out.close();
                     outputStream.close();
                     page.close();

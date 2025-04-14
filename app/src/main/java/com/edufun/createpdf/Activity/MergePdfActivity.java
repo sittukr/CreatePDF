@@ -222,6 +222,7 @@ public class MergePdfActivity extends AppCompatActivity {
         },500);
 
     }
+
     private PdfFileModel getPdfDetails(Uri uri){
         String fileName = "unknown";
         long fileSize =0;

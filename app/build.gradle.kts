@@ -58,4 +58,8 @@ dependencies {
 
    // implementation ("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
    // implementation ("com.tom-roush:pdfbox-android:2.0.27.0")
+
+    //implementation ("org.apache.pdfbox:pdfbox-android:2.0.27")
+
 }
+

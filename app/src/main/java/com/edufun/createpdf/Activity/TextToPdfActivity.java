@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
@@ -119,7 +120,7 @@ public class TextToPdfActivity extends AppCompatActivity {
 
     private void createPdf() throws IOException {
         PdfDocument pdfDocument = new PdfDocument();
-        //Paint paint = new Paint();
+        Paint paint = new Paint();
         TextPaint textPaint = new TextPaint();
         textPaint.setTextSize(14);
         int currentPageNumber = 1;

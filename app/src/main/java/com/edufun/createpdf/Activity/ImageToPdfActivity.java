@@ -167,7 +167,7 @@ public class ImageToPdfActivity extends AppCompatActivity {
                     ContentResolver resolver = getContentResolver();
                     Uri imagePdf = null;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp /ImageToPdf");
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/MyApp/ImageToPdf");
                         Uri collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
                         imagePdf = resolver.insert(collection, values);
                     }else {

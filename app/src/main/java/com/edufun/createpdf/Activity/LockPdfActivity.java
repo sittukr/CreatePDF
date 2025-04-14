@@ -108,6 +108,8 @@ public class LockPdfActivity extends AppCompatActivity {
             pdfDetails(uri);
             binding.bottomLayout.setVisibility(View.VISIBLE);
             binding.btnProtect.setVisibility(View.VISIBLE);
+            binding.tvFileName.setVisibility(View.VISIBLE);
+            binding.tvEp.setVisibility(View.VISIBLE);
         }
     });
 
